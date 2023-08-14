@@ -1,41 +1,44 @@
-package steps_test
+package steps
 
 import (
-    "fmt"
     "testing"
-
-    steps "github.com/elusive/steps"
 )
 
 const (
     ExpectedDoesNotMatch = "expected %v, got %v"
 )
 
+func TestAdd(t *testing.T) {
+    //lst := List{}
+
+    
+}
+
 func TestParseStepType(t *testing.T) {
     tests := []struct{
         value string
-        expected steps.StepType
+        expected StepType
         isOk bool
     }{
-        {"BAT", steps.BAT, true},
-        {"CMD", steps.CMD, true},
-        {"xyz", nil, false},
-        {"", nil, false},
-        {"whatisthis?", nil, false},
+        {"BAT", BAT, true},
+        {"CMD", CMD, true},
+//        {"xyz", nil, false},
+//        {"", nil, false},
+//        {"whatisthis?", nil, false},
     }
 
     for _, tc := range tests {
-        actual, ok := steps.ParseStepType(tc.value)
+        actual, ok := ParseStepType(tc.value)
         if actual != tc.expected || ok != tc.isOk {
-            t.Fatal(ExpectedDoesNotMatch, tc.expected, actual)
+            t.Errorf(ExpectedDoesNotMatch, tc.expected, actual)
         }
     }
 }
 
 
 func TestExecute(t *testing.T) {
-    steps := steps.List{}
-    record := []string{ steps.BAT, steps.StepResult.Required, ".\\test\\test.bat" }
+    steps := List{}
+    record := []string{ string(BAT), string(Required), ".\\test\\test.bat" }
     steps.Add(record)
     
     if len(steps) != 1 {

@@ -1,11 +1,9 @@
 package steps
 
 import (
-    "encoding/csv"
-    "errors"
     "fmt"
-    "os"
     "os/exec"
+    "path/filepath"
     "strings"
 )
 
@@ -20,7 +18,7 @@ const (
 
 
 
-type StepType *string
+type StepType string
 
 const (
     BAT StepType = "BAT"
@@ -30,7 +28,7 @@ const (
 
 
 
-type StepResult *string
+type StepResult string
 
 const (
     Required StepResult = "required"
@@ -50,32 +48,29 @@ func (s *step) ToString() string {
     return serialized
 }
 
-func (s *step) Execute() error {
-   }
 
 
-var (
-    capabilitiesMap = map[string]Capability{
-        "read":   Read,
-        "create": Create,
-        "update": Update,
-        "delete": Delete,
-        "list":   List,
-    }
-)
-func ParseString(str string) (Capability, bool) {
-    c, ok := capabilitiesMap[strings.ToLower(str)]
-    return c, ok
-}
 type List []step
+
 
 func (l *List) Add(record []string) error {
     lst := *l
-    s := step{
-        Type: ParseStepType(record[0]),
-        Result: ParseStepResult(record[1]),
+    s := step{}
+    if t, ok := ParseStepType(record[0]); ok {
+        s.Type = t
+    } else {
+        return fmt.Errorf("Invalid value for StepType %s", record[0])
+    }
 
-    } 
+    if r, ok := ParseStepResult(record[1]); ok {
+        s.Result = r 
+    } else {
+        return fmt.Errorf("Invalid value for StepResult %s", record[1])
+    }
+
+    s.Text = record[2] 
+    lst = append(lst, s)
+    return nil
 }
 
 func (l *List) Execute(i int) error {
@@ -87,8 +82,8 @@ func (l *List) Execute(i int) error {
     step := lst[i-1] 
 
     if step.Type == BAT {
-        path := filepath.Abs(step.Text)
-        _, err := exec.Command("CMD", "/C", path).CombinedOutput()
+        fpath, _ := filepath.Abs(step.Text)
+        _, err := exec.Command("CMD", "/C", fpath).CombinedOutput()
         if err != nil {
             return fmt.Errorf(ExecuteBatError, step.Text)
         }
