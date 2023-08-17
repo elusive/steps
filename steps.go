@@ -110,8 +110,6 @@ func (l *List) Execute(i int) error {
 }
 
 func (l *List) Load(filename string) error {
-    lst := *l
-
     if (filename == "") {
         err := GetStepFile()
         if err != nil {
@@ -137,13 +135,13 @@ func (l *List) Load(filename string) error {
     }
 
     for _, stepRecord := range steps {
-        lst.Add(stepRecord)
+        l.Add(stepRecord)
     }
 
     return nil
 }
 
-func (l *List) GetStepFile() error {
+func GetStepFile() error {
     // get current directory
     path, err := os.Getwd()
     if err != nil {

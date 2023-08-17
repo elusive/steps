@@ -1,6 +1,7 @@
 package steps
 
 import (
+    "bufio"
     "os"
     "testing"
 )
@@ -8,6 +9,12 @@ import (
 const (
     ExpectedDoesNotMatch = "expected %v, got %v"
 )
+
+var testStepRecords []string = []string{
+    "\"BAT\",\"required\",\"test.bat\"",
+    "\"CMD\",\"optional\",\"cd ../ && echo pwd\"",
+    "\"EXE\",\"required\",\"notepad.exe\"",
+}
 
 func TestAdd(t *testing.T) {
     lst := List{}
@@ -65,8 +72,7 @@ func TestExecute(t *testing.T) {
     }
 }
 
-
-func TestLoad(t *testing.T) {
+func TestGetStepFile(t *testing.T) {
     l1 := List{}
 
     tf, err := os.CreateTemp("./", "tmp*.steps")
@@ -74,8 +80,36 @@ func TestLoad(t *testing.T) {
         t.Fatalf("Error creating temp file: %s", err)
     }
     defer os.Remove(tf.Name())
-
+    
     l1.Load(tf.Name())
 
-    if (l1.Ste)
+    if (StepFile == "") {
+        t.Fatal("Step file not set")
+    }
+}
+
+func TestLoad(t *testing.T) {
+    lst := List{}
+
+    tf, err := os.CreateTemp("./", "tmp*.steps")
+    if err != nil {
+        t.Fatalf("Error creating temp file: %s", err)
+    }
+    defer os.Remove(tf.Name())
+
+    // add steps to temp file
+    w := bufio.NewWriter(tf)
+    for _, rec := range testStepRecords {
+        w.WriteString(rec + "\n")
+    }
+    w.Flush()
+    
+    err = lst.Load(tf.Name())
+    if err != nil {
+        t.Fatal(err)   
+    }
+
+    if (len(lst) != 3) {
+        t.Fatalf("Steps not loaded expected 3 got: %v", lst)//len(l1))
+    }
 }
