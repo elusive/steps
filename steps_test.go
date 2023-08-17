@@ -110,6 +110,6 @@ func TestLoad(t *testing.T) {
     }
 
     if (len(lst) != 3) {
-        t.Fatalf("Steps not loaded expected 3 got: %v", lst)//len(l1))
+        t.Fatalf("Steps not loaded expected 3 got: %d", len(lst))
     }
 }
