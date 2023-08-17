@@ -74,4 +74,8 @@ func TestLoad(t *testing.T) {
         t.Fatalf("Error creating temp file: %s", err)
     }
     defer os.Remove(tf.Name())
+
+    l1.Load(tf.Name())
+
+    if (l1.Ste)
 }

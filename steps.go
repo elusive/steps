@@ -112,7 +112,18 @@ func (l *List) Execute(i int) error {
 func (l *List) Load(filename string) error {
     lst := *l
 
-    f, err := os.Open("data.csv")
+    if (filename == "") {
+        err := GetStepFile()
+        if err != nil {
+            return fmt.Errorf("No steps file: %v", err)
+        }
+
+        filename = StepFile
+    } else {
+        StepFile = filename
+    }
+
+    f, err := os.Open(filename)
     if err != nil {
         return fmt.Errorf("Unable to open steps file: %v", err)
     }
@@ -132,7 +143,7 @@ func (l *List) Load(filename string) error {
     return nil
 }
 
-func (l *List) GetSteps() error {
+func (l *List) GetStepFile() error {
     // get current directory
     path, err := os.Getwd()
     if err != nil {
