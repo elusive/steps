@@ -1,10 +1,14 @@
 package steps
 
 import (
-    "fmt"
-    "os/exec"
-    "path/filepath"
-    "strings"
+	"encoding/csv"
+	"fmt"
+	"os"
+	"os/exec"
+	"path/filepath"
+	"strings"
+
+	"github.com/elusive/steps/util"
 )
 
 
@@ -17,7 +21,7 @@ const (
 )
 
 
-
+// StepType enum
 type StepType string
 
 const (
@@ -27,7 +31,7 @@ const (
 )
 
 
-
+// StepResult enum
 type StepResult string
 
 const (
@@ -36,7 +40,7 @@ const (
 )
 
 
-
+// step struct
 type step struct {
     Type StepType
     Result StepResult
@@ -48,13 +52,14 @@ func (s *step) ToString() string {
     return serialized
 }
 
+// holds full path to steps file
+var StepFile string
 
-
+// list of steps
 type List []step
 
 
 func (l *List) Add(record []string) error {
-    lst := *l
     s := step{}
     if t, ok := ParseStepType(record[0]); ok {
         s.Type = t
@@ -69,7 +74,7 @@ func (l *List) Add(record []string) error {
     }
 
     s.Text = record[2] 
-    lst = append(lst, s)
+    *l = append(*l, s)
     return nil
 }
 
@@ -104,9 +109,51 @@ func (l *List) Execute(i int) error {
     return fmt.Errorf(UnsupportedStepType, step.Type)
 }
 
+func (l *List) Load(filename string) error {
+    lst := *l
 
+    f, err := os.Open("data.csv")
+    if err != nil {
+        return fmt.Errorf("Unable to open steps file: %v", err)
+    }
 
+    defer f.Close()
 
+    csvReader := csv.NewReader(f)
+    steps, err := csvReader.ReadAll()
+    if err != nil {
+        return fmt.Errorf("Unable to read steps: %v", err)
+    }
+
+    for _, stepRecord := range steps {
+        lst.Add(stepRecord)
+    }
+
+    return nil
+}
+
+func (l *List) GetSteps() error {
+    // get current directory
+    path, err := os.Getwd()
+    if err != nil {
+        return fmt.Errorf("Error getting current directory: %v", err)
+    }
+
+    for _, sf := range util.Find(path, ".steps") {
+        StepFile = sf
+        break
+    }
+
+    if StepFile == "" {
+        return fmt.Errorf("No Steps file found in %s", path)
+    }
+
+    return nil
+} 
+
+/*
+ *  PRIVATE
+ */ 
 var (
     stepTypeMap = map[string]StepType{
         "bat":   BAT,
