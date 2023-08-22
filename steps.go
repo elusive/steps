@@ -15,7 +15,7 @@ import (
 const (
 	FileNotFoundError   = "The %s file was not found"
 	StepDoesNotExist    = "Step %d does not exist."
-	ExecuteBatError     = "Error executing BAT step: %s"
+	ExecuteBatError     = "Error %v executing BAT step: %s"
 	ExecuteCmdError     = "Error executing CMD step: %s"
 	UnsupportedStepType = "Unknown or unsupported step type: %s"
 )
@@ -94,12 +94,12 @@ func (l *List) Execute(i int) error {
             return fmt.Errorf("BAT file execution not available on non-windows system.")
         }
 		fpath, _ := filepath.Abs(step.Text)
-		out, err := exec.Command(prefix, fpath).Output()
-		if err != nil {
-			return fmt.Errorf(ExecuteBatError, step.Text)
+	    cmd := exec.Command(prefix, fpath)
+		if err := cmd.Run; err != nil {
+			return fmt.Errorf(ExecuteBatError, err, step.Text)
 		}
 
-		fmt.Println(string(out))
+		fmt.Println(string(cmd.Stdout))
 
 		return nil
 	}
