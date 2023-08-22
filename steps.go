@@ -84,9 +84,9 @@ func (l *List) Execute(i int) error {
 	step := lst[i]
 
     if runtime.GOOS == "windows" {
-        prefix = "cmd /c"
+        prefix = "cmd"
     } else {
-        prefix = "sh -c"
+        prefix = "sh"
     } 
 
 	if step.Type == BAT {
@@ -94,7 +94,7 @@ func (l *List) Execute(i int) error {
             return fmt.Errorf("BAT file execution not available on non-windows system.")
         }
 		fpath, _ := filepath.Abs(step.Text)
-		out, err := exec.Command("cmd", "/c", fpath).Output()
+		out, err := exec.Command(prefix, fpath).Output()
 		if err != nil {
 			return fmt.Errorf(ExecuteBatError, step.Text)
 		}

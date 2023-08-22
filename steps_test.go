@@ -104,12 +104,12 @@ func TestLoad(t *testing.T) {
 	}
 }
 
-func TestExecute(t *testing.T) {
+func TestExecuteCmd(t *testing.T) {
 	steps := List{}
     var commandText string
 
     if runtime.GOOS == "windows" {
-        commandText = "echo \"Hello world!\""
+        commandText = "echo hello world"
     } else { 
         commandText = "ls ./"
     }
@@ -121,7 +121,7 @@ func TestExecute(t *testing.T) {
 		t.Fatal("Invalid length of steps list.")
 	}
 
-	for i, _ := range steps {
+	for i := range steps {
 		err := steps.Execute(i)
         if err != nil {
             t.Fatalf("Error occured during execution of step %d: %v", i, err)
