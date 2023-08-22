@@ -6,50 +6,47 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+    "runtime"
 	"strings"
 
 	"github.com/elusive/steps/util"
 )
 
-
 const (
-    FileNotFoundError = "The %s file was not found"
-    StepDoesNotExist = "Step %d does not exist."
-    ExecuteBatError = "Error executing BAT step: %s"
-    ExecuteCmdError = "Error executing CMD step: %s"
-    UnsupportedStepType = "Unknown or unsupported step type: %s"
+	FileNotFoundError   = "The %s file was not found"
+	StepDoesNotExist    = "Step %d does not exist."
+	ExecuteBatError     = "Error executing BAT step: %s"
+	ExecuteCmdError     = "Error executing CMD step: %s"
+	UnsupportedStepType = "Unknown or unsupported step type: %s"
 )
-
 
 // StepType enum
 type StepType string
 
 const (
-    BAT StepType = "BAT"
-    CMD StepType = "CMD"
-    EXE StepType = "EXE"
+	BAT StepType = "BAT"
+	CMD StepType = "CMD"
+	EXE StepType = "EXE"
 )
-
 
 // StepResult enum
 type StepResult string
 
 const (
-    Required StepResult = "required"
-    Optional StepResult = "optional"
+	Required StepResult = "required"
+	Optional StepResult = "optional"
 )
-
 
 // step struct
 type step struct {
-    Type StepType
-    Result StepResult
-    Text string
+	Type   StepType
+	Result StepResult
+	Text   string
 }
 
 func (s *step) ToString() string {
-    serialized := fmt.Sprintf("%s,%s,%s", s.Type, s.Result, s.Text)
-    return serialized
+	serialized := fmt.Sprintf("%s,%s,%s", s.Type, s.Result, s.Text)
+	return serialized
 }
 
 // holds full path to steps file
@@ -58,130 +55,146 @@ var StepFile string
 // list of steps
 type List []step
 
-
 func (l *List) Add(record []string) error {
-    s := step{}
-    if t, ok := ParseStepType(record[0]); ok {
-        s.Type = t
-    } else {
-        return fmt.Errorf("Invalid value for StepType %s", record[0])
-    }
+	s := step{}
+	if t, ok := ParseStepType(record[0]); ok {
+		s.Type = t
+	} else {
+		return fmt.Errorf("Invalid value for StepType %s", record[0])
+	}
 
-    if r, ok := ParseStepResult(record[1]); ok {
-        s.Result = r 
-    } else {
-        return fmt.Errorf("Invalid value for StepResult %s", record[1])
-    }
+	if r, ok := ParseStepResult(record[1]); ok {
+		s.Result = r
+	} else {
+		return fmt.Errorf("Invalid value for StepResult %s", record[1])
+	}
 
-    s.Text = record[2] 
-    *l = append(*l, s)
-    return nil
+	s.Text = record[2]
+	*l = append(*l, s)
+	return nil
 }
 
 func (l *List) Execute(i int) error {
-    lst := *l
-    if i <= 0 || i > len(lst) {
-        return fmt.Errorf(StepDoesNotExist, i)
-    }
+	lst := *l
+    var prefix string
+	if i < 0 || i >= len(lst) {
+		return fmt.Errorf(StepDoesNotExist, i)
+	}
 
-    step := lst[i-1] 
+	step := lst[i]
 
-    if step.Type == BAT {
-        fpath, _ := filepath.Abs(step.Text)
-        _, err := exec.Command("CMD", "/C", fpath).CombinedOutput()
-        if err != nil {
-            return fmt.Errorf(ExecuteBatError, step.Text)
+    if runtime.GOOS == "windows" {
+        prefix = "cmd /c"
+    } else {
+        prefix = "sh -c"
+    } 
+
+	if step.Type == BAT {
+        if runtime.GOOS != "windows" {
+            return fmt.Errorf("BAT file execution not available on non-windows system.")
         }
+		fpath, _ := filepath.Abs(step.Text)
+		out, err := exec.Command("cmd", "/c", fpath).Output()
+		if err != nil {
+			return fmt.Errorf(ExecuteBatError, step.Text)
+		}
+
+		fmt.Println(string(out))
+
+		return nil
+	}
+
+	if step.Type == CMD {
+		cmd := step.Text
+        
+		out, err := exec.Command(prefix, cmd).Output()
+		if err != nil {
+			return fmt.Errorf(ExecuteCmdError, err)
+		}
+
+		fmt.Println("\n" + string(out))
 
         return nil
-    }
+	}
 
-    if step.Type == CMD {
-        cmd := step.Text
-        _, err := exec.Command("CMD", "/C", cmd).CombinedOutput()
-        if err != nil {
-            return fmt.Errorf(ExecuteCmdError, cmd)
-        }
-
-        return nil
-    }
-
-    return fmt.Errorf(UnsupportedStepType, step.Type)
+	return fmt.Errorf(UnsupportedStepType, step.Type)
 }
 
 func (l *List) Load(filename string) error {
-    if (filename == "") {
-        err := GetStepFile()
-        if err != nil {
-            return fmt.Errorf("No steps file: %v", err)
-        }
+	if filename == "" {
+		err := GetStepFile()
+		if err != nil {
+			return fmt.Errorf("No steps file: %v", err)
+		}
 
-        filename = StepFile
-    } else {
-        StepFile = filename
-    }
+		filename = StepFile
+	} else {
+		StepFile = filename
+	}
 
-    f, err := os.Open(filename)
-    if err != nil {
-        return fmt.Errorf("Unable to open steps file: %v", err)
-    }
+	f, err := os.Open(filename)
+	if err != nil {
+		return fmt.Errorf("Unable to open steps file: %v", err)
+	}
 
-    defer f.Close()
+	defer f.Close()
 
-    csvReader := csv.NewReader(f)
-    steps, err := csvReader.ReadAll()
-    if err != nil {
-        return fmt.Errorf("Unable to read steps: %v", err)
-    }
+	csvReader := csv.NewReader(f)
+	steps, err := csvReader.ReadAll()
+	if err != nil {
+		return fmt.Errorf("Unable to read steps: %v", err)
+	}
 
-    for _, stepRecord := range steps {
-        l.Add(stepRecord)
-    }
+	for _, stepRecord := range steps {
+		l.Add(stepRecord)
+	}
 
-    return nil
+	return nil
 }
 
 func GetStepFile() error {
-    // get current directory
-    path, err := os.Getwd()
-    if err != nil {
-        return fmt.Errorf("Error getting current directory: %v", err)
-    }
+	// get current directory
+	path, err := os.Getwd()
+	if err != nil {
+		return fmt.Errorf("Error getting current directory: %v", err)
+	}
 
-    for _, sf := range util.Find(path, ".steps") {
-        StepFile = sf
-        break
-    }
+	for _, sf := range util.Find(path, ".steps") {
+		StepFile = sf
+		break
+	}
 
-    if StepFile == "" {
-        return fmt.Errorf("No Steps file found in %s", path)
-    }
+	if StepFile == "" {
+		return fmt.Errorf("No Steps file found in %s", path)
+	}
 
-    return nil
-} 
+	return nil
+}
 
 /*
  *  PRIVATE
- */ 
+ */
 var (
-    stepTypeMap = map[string]StepType{
-        "bat":   BAT,
-        "cmd":   CMD,
-        "exe":   EXE,
-    }
+	stepTypeMap = map[string]StepType{
+		"bat": BAT,
+		"cmd": CMD,
+		"exe": EXE,
+	}
 )
+
 func ParseStepType(str string) (StepType, bool) {
-    t, ok := stepTypeMap[strings.ToLower(str)]
-    return t, ok;
+	t, ok := stepTypeMap[strings.ToLower(str)]
+	return t, ok
 }
 
 var (
-    stepResultMap = map[string]StepResult{
-        "required": Required,
-        "optional": Optional,
-    }
+	stepResultMap = map[string]StepResult{
+		"required": Required,
+		"optional": Optional,
+	}
 )
+
 func ParseStepResult(str string) (StepResult, bool) {
-    r, ok := stepResultMap[strings.ToLower(str)]
-    return r, ok;
+	r, ok := stepResultMap[strings.ToLower(str)]
+	return r, ok
 }
