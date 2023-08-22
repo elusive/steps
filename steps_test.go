@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"os"
     "runtime"
+    "strings"
 	"testing"
 )
 
@@ -36,7 +37,7 @@ func TestAdd(t *testing.T) {
 		t.Fatalf("Added step type expected %v got %v", Required, lst[0].Result)
 	}
 
-	if lst[0].Text != cmdText {
+	if strings.Join(lst[0].Text, " ") != cmdText {
 		t.Fatalf("Added step type expected %v got %v", cmdText, lst[0].Text)
 	}
 }

@@ -6,7 +6,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-    "runtime"
+	"runtime"
 	"strings"
 
 	"github.com/elusive/steps/util"
@@ -41,11 +41,11 @@ const (
 type step struct {
 	Type   StepType
 	Result StepResult
-	Text   string
+	Text   []string
 }
 
 func (s *step) ToString() string {
-	serialized := fmt.Sprintf("%s,%s,%s", s.Type, s.Result, s.Text)
+	serialized := fmt.Sprintf("%s,%s,%s", s.Type, s.Result, strings.Join(s.Text, " "))
 	return serialized
 }
 
@@ -69,52 +69,51 @@ func (l *List) Add(record []string) error {
 		return fmt.Errorf("Invalid value for StepResult %s", record[1])
 	}
 
-	s.Text = record[2]
+	s.Text = record[2:]
 	*l = append(*l, s)
 	return nil
 }
 
 func (l *List) Execute(i int) error {
 	lst := *l
-    var prefix string
+	var prefix string
 	if i < 0 || i >= len(lst) {
 		return fmt.Errorf(StepDoesNotExist, i)
 	}
 
 	step := lst[i]
 
-    if runtime.GOOS == "windows" {
-        prefix = "cmd"
-    } else {
-        prefix = "sh"
-    } 
+	if runtime.GOOS == "windows" {
+		prefix = "cmd"
+	} else {
+		prefix = "sh"
+	}
 
 	if step.Type == BAT {
-        if runtime.GOOS != "windows" {
-            return fmt.Errorf("BAT file execution not available on non-windows system.")
-        }
-		fpath, _ := filepath.Abs(step.Text)
-	    cmd := exec.Command(prefix, fpath)
+		if runtime.GOOS != "windows" {
+			return fmt.Errorf("BAT file execution not available on non-windows system.")
+		}
+		fpath, _ := filepath.Abs(step.Text[0])
+		cmd := exec.Command(prefix, fpath)
 		if err := cmd.Run; err != nil {
-			return fmt.Errorf(ExecuteBatError, err, step.Text)
+			return fmt.Errorf(ExecuteBatError, err(), step.Text)
 		}
 
-		fmt.Println(string(cmd.Stdout))
+		//fmt.Println(string(cmd.Stdout))
 
 		return nil
 	}
 
 	if step.Type == CMD {
-		cmd := step.Text
-        
-		out, err := exec.Command(prefix, cmd).Output()
-		if err != nil {
+	    cmd := exec.Command("cmd", step.Text[:]...)
+		cmd.Stdout = os.Stdout
+        if err := cmd.Run(); err != nil {
 			return fmt.Errorf(ExecuteCmdError, err)
 		}
 
-		fmt.Println("\n" + string(out))
+		//fmt.Println("\n" + string(out))
 
-        return nil
+		return nil
 	}
 
 	return fmt.Errorf(UnsupportedStepType, step.Type)

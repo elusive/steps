@@ -1,0 +1,19 @@
+run = "go run steps.go"
+hidden = ["main"]
+compile = "go build ."
+
+[languages.go]
+pattern = "**/*.go"
+
+[languages.go.languageServer]
+start = "gopls"
+
+[nix]
+channel = "stable-22_11"
+
+[gitHubImport]
+requiredFiles = [".replit", "replit.nix"]
+
+[deployment]
+run = ["sh", "-c", "go run steps.go"]
+build = ["sh", "-c", "go build ."]
