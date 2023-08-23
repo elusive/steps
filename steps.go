@@ -8,8 +8,13 @@ import (
 	"path/filepath"
 	"runtime"
 	"strings"
+    "syscall"
 
 	"github.com/elusive/steps/util"
+)
+
+const (
+    CREATE_NEW_CONSOLE = 0x10
 )
 
 const (
@@ -76,30 +81,30 @@ func (l *List) Add(record []string) error {
 
 func (l *List) Execute(i int) error {
 	lst := *l
-	var prefix string
+
 	if i < 0 || i >= len(lst) {
 		return fmt.Errorf(StepDoesNotExist, i)
 	}
 
 	step := lst[i]
 
-	if runtime.GOOS == "windows" {
-		prefix = "cmd"
-	} else {
-		prefix = "sh"
-	}
-
 	if step.Type == BAT {
 		if runtime.GOOS != "windows" {
 			return fmt.Errorf("BAT file execution not available on non-windows system.")
 		}
-		fpath, _ := filepath.Abs(step.Text[0])
-		cmd := exec.Command(prefix, fpath)
-		if err := cmd.Run; err != nil {
-			return fmt.Errorf(ExecuteBatError, err(), step.Text)
-		}
 
-		//fmt.Println(string(cmd.Stdout))
+        fpath, _ := filepath.Abs(step.Text[0])
+		cmd := exec.Cmd{
+            Path: fpath,
+            SysProcAttr: &syscall.SysProcAttr{
+                CreationFlags:    CREATE_NEW_CONSOLE,
+                NoInheritHandles: true,
+            },
+        }
+
+		if err := cmd.Run(); err != nil {
+			return fmt.Errorf(ExecuteBatError, err, step.Text)
+		}
 
 		return nil
 	}
@@ -111,10 +116,12 @@ func (l *List) Execute(i int) error {
 			return fmt.Errorf(ExecuteCmdError, err)
 		}
 
-		//fmt.Println("\n" + string(out))
-
 		return nil
 	}
+
+    if step.Type == EXE {
+        return fmt.Errorf(UnsupportedStepType, step.Type)
+    }
 
 	return fmt.Errorf(UnsupportedStepType, step.Type)
 }

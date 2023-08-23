@@ -130,5 +130,28 @@ func TestExecuteCmd(t *testing.T) {
 	}
 }
 
+func TestExecuteBat(t * testing.T) {
+    steps := List{}
+    var record []string;
+    if runtime.GOOS == "windows" {
+        record = []string{string(BAT), string(Required), "start", ".\\test\\test.bat"}
+    } else {
+        record = []string{string(BAT), string(Required), "./test/test.sh"}
+    }
+
+    steps.Add(record)
+
+    if len(steps) != 1 {
+        t.Fatal("Invalid length of steps list.")
+    }
+
+    for i := range steps {
+        err := steps.Execute(i)
+        if err != nil {
+            t.Fatalf("Error ocurred during execution of step %d: %v", i, err)
+        }
+    }
+}
+
 
 
