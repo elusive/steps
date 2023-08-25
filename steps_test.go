@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"os"
     "runtime"
+    "strings"
 	"testing"
 )
 
@@ -36,7 +37,7 @@ func TestAdd(t *testing.T) {
 		t.Fatalf("Added step type expected %v got %v", Required, lst[0].Result)
 	}
 
-	if lst[0].Text != cmdText {
+	if strings.Join(lst[0].Text, " ") != cmdText {
 		t.Fatalf("Added step type expected %v got %v", cmdText, lst[0].Text)
 	}
 }
@@ -126,12 +127,12 @@ func TestLoad(t *testing.T) {
 	}
 }
 
-func TestExecute(t *testing.T) {
+func TestExecuteCmd(t *testing.T) {
 	steps := List{}
     var commandText string
 
     if runtime.GOOS == "windows" {
-        commandText = "echo \"Hello world!\""
+        commandText = "echo hello world"
     } else { 
         commandText = "ls ./"
     }
@@ -143,7 +144,7 @@ func TestExecute(t *testing.T) {
 		t.Fatal("Invalid length of steps list.")
 	}
 
-	for i, _ := range steps {
+	for i := range steps {
 		err := steps.Execute(i)
         if err != nil {
             t.Fatalf("Error occured during execution of step %d: %v", i, err)
@@ -151,7 +152,28 @@ func TestExecute(t *testing.T) {
 	}
 }
 
+func TestExecuteBat(t * testing.T) {
+    steps := List{}
+    var record []string;
+    if runtime.GOOS == "windows" {
+        record = []string{string(BAT), string(Required), "start", ".\\test\\test.bat"}
+    } else {
+        record = []string{string(BAT), string(Required), "./test/test.sh"}
+    }
 
+    steps.Add(record)
+
+    if len(steps) != 1 {
+        t.Fatal("Invalid length of steps list.")
+    }
+
+    for i := range steps {
+        err := steps.Execute(i)
+        if err != nil {
+            t.Fatalf("Error ocurred during execution of step %d: %v", i, err)
+        }
+    }
+}
 
 
 

@@ -1,8 +1,6 @@
-run = ["./main"]
-
-entrypoint = "main.go"
+run = "go run steps.go"
 hidden = ["main"]
-compile = ["go", "build", "-o", "main", "."]
+compile = "go build ."
 
 [languages.go]
 pattern = "**/*.go"
@@ -17,4 +15,5 @@ channel = "stable-22_11"
 requiredFiles = [".replit", "replit.nix"]
 
 [deployment]
-run = ["sh", "-c", "go run ."]
+run = ["sh", "-c", "go run steps.go"]
+build = ["sh", "-c", "go build ."]

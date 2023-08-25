@@ -8,14 +8,19 @@ import (
 	"path/filepath"
 	"runtime"
 	"strings"
+    "syscall"
 
 	"github.com/elusive/steps/util"
 )
 
 const (
+    CREATE_NEW_CONSOLE = 0x10
+)
+
+const (
 	FileNotFoundError   = "The %s file was not found"
 	StepDoesNotExist    = "Step %d does not exist."
-	ExecuteBatError     = "Error executing BAT step: %s"
+	ExecuteBatError     = "Error %v executing BAT step: %s"
 	ExecuteCmdError     = "Error executing CMD step: %s"
 	UnsupportedStepType = "Unknown or unsupported step type: %s"
 )
@@ -49,11 +54,11 @@ type List []step
 type step struct {
 	Type   StepType
 	Result StepResult
-	Text   string
+	Text   []string
 }
 
 func (s *step) ToString() string {
-	serialized := fmt.Sprintf("%s,%s,%s", s.Type, s.Result, s.Text)
+	serialized := fmt.Sprintf("%s,%s,%s", s.Type, s.Result, strings.Join(s.Text, " "))
 	return serialized
 }
 
@@ -80,7 +85,7 @@ func (l *List) Add(record []string) error {
 		return fmt.Errorf("Invalid value for StepResult %s", record[1])
 	}
 
-	s.Text = record[2]
+	s.Text = record[2:]
 	*l = append(*l, s)
 	return nil
 }
@@ -94,46 +99,47 @@ func (l *List) Count() int {
 // Execute step at index provided
 func (l *List) Execute(i int) error {
 	lst := *l
-    var prefix string
+
 	if i < 0 || i >= len(lst) {
 		return fmt.Errorf(StepDoesNotExist, i)
 	}
 
 	step := lst[i]
 
-    if runtime.GOOS == "windows" {
-        prefix = "cmd /c"
-    } else {
-        prefix = "sh -c"
-    } 
-
 	if step.Type == BAT {
-        if runtime.GOOS != "windows" {
-            return fmt.Errorf("BAT file execution not available on non-windows system.")
-        }
-		fpath, _ := filepath.Abs(step.Text)
-		out, err := exec.Command("cmd", "/c", fpath).Output()
-		if err != nil {
-			return fmt.Errorf(ExecuteBatError, step.Text)
+		if runtime.GOOS != "windows" {
+			return fmt.Errorf("BAT file execution not available on non-windows system.")
 		}
 
-		fmt.Println(string(out))
+        fpath, _ := filepath.Abs(step.Text[0])
+		cmd := exec.Cmd{
+            Path: fpath,
+            SysProcAttr: &syscall.SysProcAttr{
+                CreationFlags:    CREATE_NEW_CONSOLE,
+                NoInheritHandles: true,
+            },
+        }
+
+		if err := cmd.Run(); err != nil {
+			return fmt.Errorf(ExecuteBatError, err, step.Text)
+		}
 
 		return nil
 	}
 
 	if step.Type == CMD {
-		cmd := step.Text
-        
-		out, err := exec.Command(prefix, cmd).Output()
-		if err != nil {
+	    cmd := exec.Command("cmd", step.Text[:]...)
+		cmd.Stdout = os.Stdout
+        if err := cmd.Run(); err != nil {
 			return fmt.Errorf(ExecuteCmdError, err)
 		}
 
-		fmt.Println("\n" + string(out))
-
-        return nil
+		return nil
 	}
+
+    if step.Type == EXE {
+        return fmt.Errorf(UnsupportedStepType, step.Type)
+    }
 
 	return fmt.Errorf(UnsupportedStepType, step.Type)
 }
