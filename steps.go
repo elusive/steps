@@ -6,7 +6,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-    "runtime"
+	"runtime"
 	"strings"
 
 	"github.com/elusive/steps/util"
@@ -37,7 +37,15 @@ const (
 	Optional StepResult = "optional"
 )
 
-// step struct
+var (
+    StepFile string
+    StepCount int
+)
+
+type List []step
+
+
+// private definition of step type
 type step struct {
 	Type   StepType
 	Result StepResult
@@ -49,12 +57,15 @@ func (s *step) ToString() string {
 	return serialized
 }
 
-// holds full path to steps file
-var StepFile string
 
-// list of steps
-type List []step
 
+
+
+/**
+ * PUBLIC methods for the list
+ */
+
+// Add steps from []string
 func (l *List) Add(record []string) error {
 	s := step{}
 	if t, ok := ParseStepType(record[0]); ok {
@@ -74,6 +85,13 @@ func (l *List) Add(record []string) error {
 	return nil
 }
 
+// Count of steps loaded into list
+func (l *List) Count() int {
+    lst := *l
+    return len(lst)
+}
+
+// Execute step at index provided
 func (l *List) Execute(i int) error {
 	lst := *l
     var prefix string
@@ -120,6 +138,7 @@ func (l *List) Execute(i int) error {
 	return fmt.Errorf(UnsupportedStepType, step.Type)
 }
 
+// Load list from *.steps file
 func (l *List) Load(filename string) error {
 	if filename == "" {
 		err := GetStepFile()
@@ -152,6 +171,13 @@ func (l *List) Load(filename string) error {
 	return nil
 }
 
+
+
+/**
+ *   PUBLIC methods (not part of list)
+ */
+
+// GetStepFile returns the first steps file found. 
 func GetStepFile() error {
 	// get current directory
 	path, err := os.Getwd()
@@ -171,8 +197,20 @@ func GetStepFile() error {
 	return nil
 }
 
-/*
- *  PRIVATE
+func ParseStepType(str string) (StepType, bool) {
+	t, ok := stepTypeMap[strings.ToLower(str)]
+	return t, ok
+}
+
+func ParseStepResult(str string) (StepResult, bool) {
+	r, ok := stepResultMap[strings.ToLower(str)]
+	return r, ok
+}
+
+
+
+/**
+ * PRIVATE 
  */
 var (
 	stepTypeMap = map[string]StepType{
@@ -182,10 +220,6 @@ var (
 	}
 )
 
-func ParseStepType(str string) (StepType, bool) {
-	t, ok := stepTypeMap[strings.ToLower(str)]
-	return t, ok
-}
 
 var (
 	stepResultMap = map[string]StepResult{
@@ -194,7 +228,3 @@ var (
 	}
 )
 
-func ParseStepResult(str string) (StepResult, bool) {
-	r, ok := stepResultMap[strings.ToLower(str)]
-	return r, ok
-}

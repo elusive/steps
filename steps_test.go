@@ -41,6 +41,28 @@ func TestAdd(t *testing.T) {
 	}
 }
 
+func TestCount(t *testing.T) {
+    lst := List{}
+    expected := 1 
+
+	const cmdText string = "&quot;Install.bat&quot;"
+	stepValues := []string{string(BAT), string(Required), cmdText}
+	lst.Add(stepValues)
+
+    // verify we have added a single step
+	if len(lst) != 1 {
+		t.Fatalf("Steps list count %d not expected.", len(lst))
+	}
+
+    // now verify using Count() method
+    actual := lst.Count()
+    if actual != expected {
+        t.Fatalf("Expected count of %d, got %d", expected, actual)
+    }
+
+
+}
+
 func TestParseStepType(t *testing.T) {
 	tests := []struct {
 		value    string
