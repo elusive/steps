@@ -1,15 +1,29 @@
-package main 
+package main
 
 import (
-    "fmt"
-    "os"
-//    "strings"
+	"fmt"
+    "path/filepath"
+	"os"
 
-    "github.com/elusive/steps"
+	"github.com/elusive/steps/steps"
+	"github.com/elusive/steps/util"
+)
+
+const (
+    stepsFileEnvVarName string = "STEPS_FILENAME"
+
+    // exit codes
+    WORKING_PATH_ERROR = 2
+    NO_STEPS_FILE = 3
+    STEPS_FILE_LOAD_ERROR = 4
+    EXECUTION_ERROR = 5
 )
 
 // filename used if none specified
-const stepsFileName = ".steps"
+var ( 
+    currentPath string = ""
+    stepsFileName string = ".steps"
+)
 
 
 func main() {
@@ -18,6 +32,18 @@ func main() {
     l := &steps.List{}
     fn := stepsFileName
 
+    // check if user-defined steps filename exists,
+    // this path should be relative to working dir
+    if os.Getenv(stepsFileEnvVarName) != "" {
+        stepsFileName = os.Getenv(stepsFileEnvVarName)
+    }
+
+    // where are we?
+    currentPath, err := os.Getwd()
+	if err != nil {
+		fmt.Println("Error:", err)
+		os.Exit(WORKING_PATH_ERROR)
+	}
 
     // HANDLE ARGS...
     
@@ -25,7 +51,11 @@ func main() {
      *  Initial logic is that if no args are provided
      *  then we will load the default filename of steps.
      *  And we will begin execution of the steps found.
-     *  
+     *    
+     *  If the default file does not exist then we can
+     *  perform a recursive file search for the first
+     *  file we find that has the "*.steps" extension.
+     * 
      *  If a single arg is passed it is treated as the
      *  filename (for now) and steps loaded from it. And
      *  then we will begin execution of those steps.
@@ -33,23 +63,80 @@ func main() {
 
     switch {
 
-        // load steps from default file stepsFileName
-        case len(os.Args) == 0 :
-            l.Load(fn)
-
         // first arg always steps filename
         case len(os.Args) == 1: 
-              
-       
+            fn = os.Args[0]
+            loadErr := l.Load(fn)
+            if loadErr != nil {
+                os.Exit(NO_STEPS_FILE)
+            }  
+      
+        // no args is default
         default: 
-            fmt.Println("Help for Steps Utility...")
+            // try to resolve default or user env steps file
+            var resolved bool
+            stepsFileName, absErr := filepath.Abs(stepsFileName)
+            resolved = absErr != nil 
+
+            if resolved {
+                // try loading user env steps file
+                loadEnvSpecifiedErr := l.Load(stepsFileName)
+                if loadEnvSpecifiedErr != nil {
+                    os.Exit(STEPS_FILE_LOAD_ERROR)
+                }
+            } else {
+                // search for steps file, if found try to load
+                foundStepsFile, foundErr := FindStepsFile()
+                if foundErr != nil {
+                    os.Exit(NO_STEPS_FILE)
+                }
+
+                loadFoundErr := l.Load(foundStepsFile)
+                if loadFoundErr != nil {
+                    os.Exit(STEPS_FILE_LOAD_ERROR)
+                }
+            }
     }
 
     // output some feedback (TODO:  remove or update this)
-    fmt.Fprintln("%d steps loaded from .steps file: %s", l.Count(), fn)           
+    fmt.Printf("%d steps loaded from .steps file: %s\n", l.Count(), fn)           
 
     // load from filename
     if err := l.Load(stepsFileName); err != nil {
         fmt.Fprintln(os.Stderr, err)
     }
 }   
+
+
+
+
+
+/**
+ *     PRIVATE
+ */
+
+func FindStepsFile() (string, error) {
+    var stepsFile string
+	
+    // get current directory
+	path, err := os.Getwd()
+	if err != nil {
+		return stepsFile, fmt.Errorf("Error getting current directory: %v", err)
+	}
+
+    // search for file by extension
+	for _, sf := range util.Find(path, ".steps") {
+		stepsFile = sf
+		break
+	}
+
+    // if nothing found return error
+	if stepsFile == "" {
+		return stepsFile, fmt.Errorf("No Steps file found in %s", path)
+	}
+
+    // else return result
+	return stepsFile, nil
+}
+
+

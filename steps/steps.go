@@ -10,7 +10,6 @@ import (
 	"strings"
     "syscall"
 
-	"github.com/elusive/steps/util"
 )
 
 const (
@@ -147,17 +146,12 @@ func (l *List) Execute(i int) error {
 // Load list from *.steps file
 func (l *List) Load(filename string) error {
 	if filename == "" {
-		err := GetStepFile()
-		if err != nil {
-			return fmt.Errorf("No steps file: %v", err)
-		}
-
-		filename = StepFile
+        return fmt.Errorf("No steps file: %v", err)
 	} else {
 		StepFile = filename
 	}
 
-	f, err := os.Open(filename)
+	f, err := os.Open(StepFile)
 	if err != nil {
 		return fmt.Errorf("Unable to open steps file: %v", err)
 	}
@@ -184,24 +178,7 @@ func (l *List) Load(filename string) error {
  */
 
 // GetStepFile returns the first steps file found. 
-func GetStepFile() error {
-	// get current directory
-	path, err := os.Getwd()
-	if err != nil {
-		return fmt.Errorf("Error getting current directory: %v", err)
-	}
 
-	for _, sf := range util.Find(path, ".steps") {
-		StepFile = sf
-		break
-	}
-
-	if StepFile == "" {
-		return fmt.Errorf("No Steps file found in %s", path)
-	}
-
-	return nil
-}
 
 func ParseStepType(str string) (StepType, bool) {
 	t, ok := stepTypeMap[strings.ToLower(str)]

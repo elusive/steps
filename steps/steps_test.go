@@ -86,66 +86,84 @@ func TestParseStepType(t *testing.T) {
 }
 
 func TestGetStepFile(t *testing.T) {
-	l1 := List{}
 
+    // arrange
+    l1 := List{}
 	tf, err := os.CreateTemp("./", "tmp*.steps")
 	if err != nil {
 		t.Fatalf("Error creating temp file: %s", err)
 	}
-	defer os.Remove(tf.Name())
 
+    // act
 	l1.Load(tf.Name())
 
+    // assert
 	if StepFile == "" {
 		t.Fatal("Step file not set")
 	}
+
+    // cleanup
+    t.Cleanup(func(){
+        os.Remove(tf.Name())
+    })
 }
 
 func TestLoad(t *testing.T) {
-	lst := List{}
 
+    // arrange
+    lst := List{}
 	tf, err := os.CreateTemp("./", "tmp*.steps")
 	if err != nil {
 		t.Fatalf("Error creating temp file: %s", err)
 	}
-	defer os.Remove(tf.Name())
 
-	// add steps to temp file
+    // act
 	w := bufio.NewWriter(tf)
 	for _, rec := range testStepRecords {
 		w.WriteString(rec + "\n")
 	}
 	w.Flush()
-
 	err = lst.Load(tf.Name())
 	if err != nil {
 		t.Fatal(err)
 	}
 
+    // assert
 	if len(lst) != 3 {
 		t.Fatalf("Steps not loaded expected 3 got: %d", len(lst))
 	}
+
+    // cleanup
+    t.Cleanup(func(){
+        os.Remove(tf.Name())
+    })
 }
 
 func TestExecuteCmd(t *testing.T) {
-	steps := List{}
+	
+    // arrange
+    steps := List{}
     var commandText string
-
     if runtime.GOOS == "windows" {
-        commandText = "echo hello world"
+        commandText = "dir"
     } else { 
         commandText = "ls ./"
     }
-
     record := []string{string(CMD), string(Required), commandText}
+    
+    // act
 	steps.Add(record)
 
+    // assert
 	if len(steps) != 1 {
 		t.Fatal("Invalid length of steps list.")
 	}
 
+    // act
 	for i := range steps {
 		err := steps.Execute(i)
+        
+        // assert
         if err != nil {
             t.Fatalf("Error occured during execution of step %d: %v", i, err)
         }
@@ -153,6 +171,8 @@ func TestExecuteCmd(t *testing.T) {
 }
 
 func TestExecuteBat(t * testing.T) {
+    
+    // arrange
     steps := List{}
     var record []string;
     if runtime.GOOS == "windows" {
@@ -161,14 +181,19 @@ func TestExecuteBat(t * testing.T) {
         record = []string{string(BAT), string(Required), "./test/test.sh"}
     }
 
+    // act
     steps.Add(record)
 
+    // assert
     if len(steps) != 1 {
         t.Fatal("Invalid length of steps list.")
     }
 
+    // act
     for i := range steps {
         err := steps.Execute(i)
+        
+        // assert
         if err != nil {
             t.Fatalf("Error ocurred during execution of step %d: %v", i, err)
         }
