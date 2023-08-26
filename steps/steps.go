@@ -9,7 +9,6 @@ import (
 	"runtime"
 	"strings"
     "syscall"
-
 )
 
 const (
@@ -146,7 +145,7 @@ func (l *List) Execute(i int) error {
 // Load list from *.steps file
 func (l *List) Load(filename string) error {
 	if filename == "" {
-        return fmt.Errorf("No steps file: %v", err)
+        return fmt.Errorf("Empty steps file parameter.")
 	} else {
 		StepFile = filename
 	}

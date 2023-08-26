@@ -1,6 +1,7 @@
 package main
 
 import (
+    "flag"
 	"fmt"
     "path/filepath"
 	"os"
@@ -32,18 +33,20 @@ func main() {
     l := &steps.List{}
     fn := stepsFileName
 
+    verbose := flag.Bool("verbose", false, "Verbose output for debugging.")
+    flag.Parse()
+
+    out("Starting Steps Utility...", *verbose)
+
+
     // check if user-defined steps filename exists,
     // this path should be relative to working dir
-    if os.Getenv(stepsFileEnvVarName) != "" {
-        stepsFileName = os.Getenv(stepsFileEnvVarName)
+    envFn := os.Getenv(stepsFileEnvVarName)
+    if envFn != ""
+        
+        stepsFileName = envFn
     }
 
-    // where are we?
-    currentPath, err := os.Getwd()
-	if err != nil {
-		fmt.Println("Error:", err)
-		os.Exit(WORKING_PATH_ERROR)
-	}
 
     // HANDLE ARGS...
     
@@ -64,7 +67,7 @@ func main() {
     switch {
 
         // first arg always steps filename
-        case len(os.Args) == 1: 
+        case len(flag.Args()) == 1: 
             fn = os.Args[0]
             loadErr := l.Load(fn)
             if loadErr != nil {
@@ -76,35 +79,38 @@ func main() {
             // try to resolve default or user env steps file
             var resolved bool
             stepsFileName, absErr := filepath.Abs(stepsFileName)
-            resolved = absErr != nil 
+            resolved = (absErr == nil) 
+            out(fmt.Sprintf("Resolved steps filename: %s", stepsFileName), *verbose)
 
             if resolved {
                 // try loading user env steps file
                 loadEnvSpecifiedErr := l.Load(stepsFileName)
                 if loadEnvSpecifiedErr != nil {
+                    out(fmt.Sprintf("Error returned from loading steps file: %s", stepsFileName), *verbose)
+                    out(fmt.Sprintf("%v", loadEnvSpecifiedErr), *verbose)
                     os.Exit(STEPS_FILE_LOAD_ERROR)
                 }
             } else {
                 // search for steps file, if found try to load
                 foundStepsFile, foundErr := FindStepsFile()
                 if foundErr != nil {
+                    out(fmt.Sprintf("Error returned from find steps file: %v", foundErr), *verbose)
                     os.Exit(NO_STEPS_FILE)
                 }
+                out(fmt.Sprintf("Found steps file: %s", foundStepsFile), *verbose)
 
                 loadFoundErr := l.Load(foundStepsFile)
                 if loadFoundErr != nil {
+                    out("Error returned from loading found file.", *verbose)                
                     os.Exit(STEPS_FILE_LOAD_ERROR)
                 }
+                out("Found steps file loaded", *verbose)
             }
     }
 
     // output some feedback (TODO:  remove or update this)
-    fmt.Printf("%d steps loaded from .steps file: %s\n", l.Count(), fn)           
-
-    // load from filename
-    if err := l.Load(stepsFileName); err != nil {
-        fmt.Fprintln(os.Stderr, err)
-    }
+    out(fmt.Sprintf("%d steps loaded from .steps file: %s\n", l.Count(), fn), *verbose)     
+    out("...Exiting Steps Utility", *verbose)
 }   
 
 
@@ -114,6 +120,12 @@ func main() {
 /**
  *     PRIVATE
  */
+
+func out(msg string, verbose bool) {
+    if verbose {
+        fmt.Println(msg)
+    }
+}
 
 func FindStepsFile() (string, error) {
     var stepsFile string
