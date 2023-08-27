@@ -3,8 +3,7 @@ package steps
 import (
 	"bufio"
 	"os"
-    "runtime"
-    "strings"
+	"runtime"
 	"testing"
 )
 
@@ -37,30 +36,29 @@ func TestAdd(t *testing.T) {
 		t.Fatalf("Added step type expected %v got %v", Required, lst[0].Result)
 	}
 
-	if strings.Join(lst[0].Text, " ") != cmdText {
+	if lst[0].Text != cmdText {
 		t.Fatalf("Added step type expected %v got %v", cmdText, lst[0].Text)
 	}
 }
 
 func TestCount(t *testing.T) {
-    lst := List{}
-    expected := 1 
+	lst := List{}
+	expected := 1
 
 	const cmdText string = "&quot;Install.bat&quot;"
 	stepValues := []string{string(BAT), string(Required), cmdText}
 	lst.Add(stepValues)
 
-    // verify we have added a single step
+	// verify we have added a single step
 	if len(lst) != 1 {
 		t.Fatalf("Steps list count %d not expected.", len(lst))
 	}
 
-    // now verify using Count() method
-    actual := lst.Count()
-    if actual != expected {
-        t.Fatalf("Expected count of %d, got %d", expected, actual)
-    }
-
+	// now verify using Count() method
+	actual := lst.Count()
+	if actual != expected {
+		t.Fatalf("Expected count of %d, got %d", expected, actual)
+	}
 
 }
 
@@ -87,37 +85,37 @@ func TestParseStepType(t *testing.T) {
 
 func TestGetStepFile(t *testing.T) {
 
-    // arrange
-    l1 := List{}
+	// arrange
+	l1 := List{}
 	tf, err := os.CreateTemp("./", "tmp*.steps")
 	if err != nil {
 		t.Fatalf("Error creating temp file: %s", err)
 	}
 
-    // act
+	// act
 	l1.Load(tf.Name())
 
-    // assert
+	// assert
 	if StepFile == "" {
 		t.Fatal("Step file not set")
 	}
 
-    // cleanup
-    t.Cleanup(func(){
-        os.Remove(tf.Name())
-    })
+	// cleanup
+	t.Cleanup(func() {
+		os.Remove(tf.Name())
+	})
 }
 
 func TestLoad(t *testing.T) {
 
-    // arrange
-    lst := List{}
+	// arrange
+	lst := List{}
 	tf, err := os.CreateTemp("./", "tmp*.steps")
 	if err != nil {
 		t.Fatalf("Error creating temp file: %s", err)
 	}
 
-    // act
+	// act
 	w := bufio.NewWriter(tf)
 	for _, rec := range testStepRecords {
 		w.WriteString(rec + "\n")
@@ -128,77 +126,74 @@ func TestLoad(t *testing.T) {
 		t.Fatal(err)
 	}
 
-    // assert
+	// assert
 	if len(lst) != 3 {
 		t.Fatalf("Steps not loaded expected 3 got: %d", len(lst))
 	}
 
-    // cleanup
-    t.Cleanup(func(){
-        os.Remove(tf.Name())
-    })
+	// cleanup
+	t.Cleanup(func() {
+		os.Remove(tf.Name())
+	})
 }
 
 func TestExecuteCmd(t *testing.T) {
-	
-    // arrange
-    steps := List{}
-    var commandText string
-    if runtime.GOOS == "windows" {
-        commandText = "dir"
-    } else { 
-        commandText = "ls ./"
-    }
-    record := []string{string(CMD), string(Required), commandText}
-    
-    // act
+
+	// arrange
+	steps := List{}
+	var commandText string
+	if runtime.GOOS == "windows" {
+		commandText = "dir"
+	} else {
+		commandText = "ls ./"
+	}
+	record := []string{string(CMD), string(Required), commandText}
+
+	// act
 	steps.Add(record)
 
-    // assert
+	// assert
 	if len(steps) != 1 {
 		t.Fatal("Invalid length of steps list.")
 	}
 
-    // act
+	// act
 	for i := range steps {
 		err := steps.Execute(i)
-        
-        // assert
-        if err != nil {
-            t.Fatalf("Error occured during execution of step %d: %v", i, err)
-        }
+
+		// assert
+		if err != nil {
+			t.Fatalf("Error occured during execution of step %d: %v", i, err)
+		}
 	}
 }
 
-func TestExecuteBat(t * testing.T) {
-    
-    // arrange
-    steps := List{}
-    var record []string;
-    if runtime.GOOS == "windows" {
-        record = []string{string(BAT), string(Required), "start", ".\\test\\test.bat"}
-    } else {
-        record = []string{string(BAT), string(Required), "./test/test.sh"}
-    }
+func TestExecuteBat(t *testing.T) {
 
-    // act
-    steps.Add(record)
+	// arrange
+	steps := List{}
+	var record []string
+	if runtime.GOOS == "windows" {
+		record = []string{string(BAT), string(Required), "..\\test\\test.bat"}
+	} else {
+		record = []string{string(BAT), string(Required), "../test/test.sh"}
+	}
 
-    // assert
-    if len(steps) != 1 {
-        t.Fatal("Invalid length of steps list.")
-    }
+	// act
+	steps.Add(record)
 
-    // act
-    for i := range steps {
-        err := steps.Execute(i)
-        
-        // assert
-        if err != nil {
-            t.Fatalf("Error ocurred during execution of step %d: %v", i, err)
-        }
-    }
+	// assert
+	if len(steps) != 1 {
+		t.Fatal("Invalid length of steps list.")
+	}
+
+	// act
+	for i := range steps {
+		err := steps.Execute(i)
+
+		// assert
+		if err != nil {
+			t.Fatalf("Error ocurred during execution of step %d: %v", i, err)
+		}
+	}
 }
-
-
-

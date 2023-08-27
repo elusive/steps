@@ -10,12 +10,12 @@ build:
 	@GOARCH=amd64 GOOS=windows go build -o ${BINARY_NAME}.exe cmd/steps/main.go
 
 run: build
-	@./${BINARY_NAME}
+	@./${BINARY_NAME} -verbose
 
 clean: 
 	@go clean
 	@rm -f ${BINARY_NAME}.exe
-	@rm -f tmp*
+	@rm -f steps/tmp*
 	@rm -f __debug_bin.exe
 
 # Need to mark the test action phony as we have 

@@ -1,10 +1,10 @@
-package util 
+package util
 
 import (
-    "io/fs"
-    "path/filepath"    
+	"io/fs"
+	"os"
+	"path/filepath"
 )
-
 
 /**
  * function to find files by ext.
@@ -14,15 +14,26 @@ import (
  *  }
  */
 func Find(root, ext string) []string {
-   var a []string
-   filepath.WalkDir(root, func(s string, d fs.DirEntry, e error) error {
-      if e != nil { return e }
-      if filepath.Ext(d.Name()) == ext {
-         a = append(a, s)
-      }
-      return nil
-   })
-   return a
+	var a []string
+	filepath.WalkDir(root, func(s string, d fs.DirEntry, e error) error {
+		if e != nil {
+			return e
+		}
+		if filepath.Ext(d.Name()) == ext {
+			a = append(a, s)
+		}
+		return nil
+	})
+	return a
 }
 
-
+/**
+ * Returns true if file exists, otherwise false.
+ */
+func FileExists(filename string) bool {
+	info, err := os.Stat(filename)
+	if os.IsNotExist(err) {
+		return false
+	}
+	return !info.IsDir()
+}

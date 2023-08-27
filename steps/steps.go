@@ -8,19 +8,19 @@ import (
 	"path/filepath"
 	"runtime"
 	"strings"
-    "syscall"
+	"syscall"
 )
 
 const (
-    CREATE_NEW_CONSOLE = 0x10
+	CREATE_NEW_CONSOLE = 0x10
 )
 
 const (
-	FileNotFoundError   = "The %s file was not found"
-	StepDoesNotExist    = "Step %d does not exist."
-	ExecuteBatError     = "Error %v executing BAT step: %s"
-	ExecuteCmdError     = "Error executing CMD step: %s"
-	UnsupportedStepType = "Unknown or unsupported step type: %s"
+	FileNotFoundError   = "the %s file was not found"
+	StepDoesNotExist    = "step %d does not exist"
+	ExecuteBatError     = "error %v executing BAT step: %s"
+	ExecuteCmdError     = "error executing CMD step: %s"
+	UnsupportedStepType = "unknown or unsupported step type: %s"
 )
 
 // StepType enum
@@ -41,28 +41,23 @@ const (
 )
 
 var (
-    StepFile string
-    StepCount int
+	StepFile  string
+	StepCount int
 )
 
 type List []step
-
 
 // private definition of step type
 type step struct {
 	Type   StepType
 	Result StepResult
-	Text   []string
+	Text   string
 }
 
 func (s *step) ToString() string {
-	serialized := fmt.Sprintf("%s,%s,%s", s.Type, s.Result, strings.Join(s.Text, " "))
+	serialized := fmt.Sprintf("%s,%s,%s", s.Type, s.Result, s.Text)
 	return serialized
 }
-
-
-
-
 
 /**
  * PUBLIC methods for the list
@@ -74,24 +69,24 @@ func (l *List) Add(record []string) error {
 	if t, ok := ParseStepType(record[0]); ok {
 		s.Type = t
 	} else {
-		return fmt.Errorf("Invalid value for StepType %s", record[0])
+		return fmt.Errorf("invalid value for StepType %s", record[0])
 	}
 
 	if r, ok := ParseStepResult(record[1]); ok {
 		s.Result = r
 	} else {
-		return fmt.Errorf("Invalid value for StepResult %s", record[1])
+		return fmt.Errorf("invalid value for StepResult %s", record[1])
 	}
 
-	s.Text = record[2:]
+	s.Text = record[2]
 	*l = append(*l, s)
 	return nil
 }
 
 // Count of steps loaded into list
 func (l *List) Count() int {
-    lst := *l
-    return len(lst)
+	lst := *l
+	return len(lst)
 }
 
 // Execute step at index provided
@@ -106,17 +101,17 @@ func (l *List) Execute(i int) error {
 
 	if step.Type == BAT {
 		if runtime.GOOS != "windows" {
-			return fmt.Errorf("BAT file execution not available on non-windows system.")
+			return fmt.Errorf("bat file execution not available on non-windows system")
 		}
 
-        fpath, _ := filepath.Abs(step.Text[0])
+		fpath, _ := filepath.Abs(step.Text)
 		cmd := exec.Cmd{
-            Path: fpath,
-            SysProcAttr: &syscall.SysProcAttr{
-                CreationFlags:    CREATE_NEW_CONSOLE,
-                NoInheritHandles: true,
-            },
-        }
+			Path: fpath,
+			SysProcAttr: &syscall.SysProcAttr{
+				CreationFlags:    CREATE_NEW_CONSOLE,
+				NoInheritHandles: true,
+			},
+		}
 
 		if err := cmd.Run(); err != nil {
 			return fmt.Errorf(ExecuteBatError, err, step.Text)
@@ -126,18 +121,18 @@ func (l *List) Execute(i int) error {
 	}
 
 	if step.Type == CMD {
-	    cmd := exec.Command("cmd", step.Text[:]...)
-		cmd.Stdout = os.Stdout
-        if err := cmd.Run(); err != nil {
+		out, err := exec.Command("cmd", "/C", step.Text).Output()
+		if err != nil {
 			return fmt.Errorf(ExecuteCmdError, err)
 		}
 
+		fmt.Println(string(out))
 		return nil
 	}
 
-    if step.Type == EXE {
-        return fmt.Errorf(UnsupportedStepType, step.Type)
-    }
+	if step.Type == EXE {
+		return fmt.Errorf(UnsupportedStepType, step.Type)
+	}
 
 	return fmt.Errorf(UnsupportedStepType, step.Type)
 }
@@ -145,14 +140,14 @@ func (l *List) Execute(i int) error {
 // Load list from *.steps file
 func (l *List) Load(filename string) error {
 	if filename == "" {
-        return fmt.Errorf("Empty steps file parameter.")
+		return fmt.Errorf("empty steps file parameter")
 	} else {
 		StepFile = filename
 	}
 
 	f, err := os.Open(StepFile)
 	if err != nil {
-		return fmt.Errorf("Unable to open steps file: %v", err)
+		return fmt.Errorf("unable to open steps file: %v", err)
 	}
 
 	defer f.Close()
@@ -160,7 +155,7 @@ func (l *List) Load(filename string) error {
 	csvReader := csv.NewReader(f)
 	steps, err := csvReader.ReadAll()
 	if err != nil {
-		return fmt.Errorf("Unable to read steps: %v", err)
+		return fmt.Errorf("unable to read steps: %v", err)
 	}
 
 	for _, stepRecord := range steps {
@@ -170,14 +165,11 @@ func (l *List) Load(filename string) error {
 	return nil
 }
 
-
-
 /**
  *   PUBLIC methods (not part of list)
  */
 
-// GetStepFile returns the first steps file found. 
-
+// GetStepFile returns the first steps file found.
 
 func ParseStepType(str string) (StepType, bool) {
 	t, ok := stepTypeMap[strings.ToLower(str)]
@@ -189,10 +181,8 @@ func ParseStepResult(str string) (StepResult, bool) {
 	return r, ok
 }
 
-
-
 /**
- * PRIVATE 
+ * PRIVATE
  */
 var (
 	stepTypeMap = map[string]StepType{
@@ -202,11 +192,9 @@ var (
 	}
 )
 
-
 var (
 	stepResultMap = map[string]StepResult{
 		"required": Required,
 		"optional": Optional,
 	}
 )
-
