@@ -1,2 +1,2 @@
 echo "Hello world!"
-PAUSE
+rem PAUSE

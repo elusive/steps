@@ -11,6 +11,6 @@
             "mode": "auto",
             "program": "${fileDirname}",
             "args": ["-verbose", "..\\..\\test\\test.steps"]
-        }
+        }  
     ]
 }

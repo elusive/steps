@@ -20,6 +20,7 @@ const (
 	StepDoesNotExist    = "step %d does not exist"
 	ExecuteBatError     = "error %v executing BAT step: %s"
 	ExecuteCmdError     = "error executing CMD step: %s"
+	ExecuteExeError     = "error executing EXE step: %s"
 	UnsupportedStepType = "unknown or unsupported step type: %s"
 )
 
@@ -122,16 +123,30 @@ func (l *List) Execute(i int) error {
 
 	if step.Type == CMD {
 		out, err := exec.Command("cmd", "/C", step.Text).Output()
-		if err != nil {
-			return fmt.Errorf(ExecuteCmdError, err)
+		if err == nil {
+			fmt.Println(string(out))
+			return nil
 		}
 
-		fmt.Println(string(out))
-		return nil
+		if step.Result == Required {
+			return fmt.Errorf(ExecuteCmdError, err)
+		} else {
+			return nil
+		}
 	}
 
 	if step.Type == EXE {
-		return fmt.Errorf(UnsupportedStepType, step.Type)
+		_, exeErr := exec.Command(step.Text).Output()
+		if exeErr != nil {
+			return nil
+		}
+
+		if step.Result == Required {
+			return fmt.Errorf(ExecuteExeError, exeErr)
+		} else {
+			fmt.Printf(ExecuteExeError+"\n", exeErr)
+			return nil
+		}
 	}
 
 	return fmt.Errorf(UnsupportedStepType, step.Type)

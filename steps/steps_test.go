@@ -5,6 +5,8 @@ import (
 	"os"
 	"runtime"
 	"testing"
+
+	"github.com/elusive/steps/util"
 )
 
 const (
@@ -194,6 +196,25 @@ func TestExecuteBat(t *testing.T) {
 		// assert
 		if err != nil {
 			t.Fatalf("Error ocurred during execution of step %d: %v", i, err)
+		}
+	}
+}
+
+func TestExecuteExe(t *testing.T) {
+	// arrange
+	const processName = "notepad.exe"
+	steps := List{}
+	record := []string{string(EXE), string(Optional), processName}
+
+	// act
+	steps.Add(record)
+	for i := range steps {
+		util.KillProcessAsync(processName)
+		err := steps.Execute(i)
+
+		// assert
+		if err != nil {
+			t.Fatalf("Error occured during exec of step %d: %v", i, err)
 		}
 	}
 }

@@ -87,7 +87,7 @@ func main() {
 
 		loadFoundErr := l.Load(stepsFileName)
 		if loadFoundErr != nil {
-			out("Error returned from loading found file.")
+			out("Error returned from loading found file: %v", loadFoundErr)
 			os.Exit(STEPS_FILE_LOAD_ERROR)
 		}
 		out("Found steps file loaded")
