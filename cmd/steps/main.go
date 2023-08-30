@@ -90,6 +90,7 @@ func main() {
 
 	// execute steps
 	for i := 0; i < l.Count(); i++ {
+        out("Executing Step %d: %v", i, l.At(i).ToString())
 		exeErr := l.Execute(i)
 		if exeErr != nil {
 			out("Error during exec of step %d: %v\n", i, exeErr)

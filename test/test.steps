@@ -1,7 +1,3 @@
-EXE,optional,geany
+EXE,optional,notepad
 CMD,required,echo john
-CMD,required,.\\test\\test.sh
-BAT,required,%ChipsterEngine%/ChipsterSupport/ChipsterServerUtility/Install.bat
-CMD,required,cd ..\..\UniformServer &amp;&amp; UniController.exe start_both
-EXE,optional,.\ChipsterBrowser\Palemoon-Portable.exe
-CMD,required,cd ChipsterSearch &amp;&amp; call StartSearch.bat
+BAT,required,.\\test\\test.bat
