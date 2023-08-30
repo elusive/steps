@@ -8,14 +8,25 @@ on:
 jobs:
   release:
     name: Release pushed tag
-    runs-on: ubuntu-22.04
-    steps:         
-      - name: Create release
-        env:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: '1.20'
+
+    - name: Build
+      run: make build
+      
+    - name: Create release
+      env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           tag: ${{ github.ref_name }}
-        run: |
+      run: |
           gh release create "$tag" \
+              './steps.exe#Windows Binary' \
               --repo="$GITHUB_REPOSITORY" \
               --title="${GITHUB_REPOSITORY#*/} ${tag#v}" \
               --generate-notes
