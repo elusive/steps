@@ -21,7 +21,7 @@ jobs:
       run: make build 
     - name: Archive
       run: |
-          zip -r steps-win.zip *.exe
+          zip -r steps-win.zip *.exe README.md
     
     - name: Create Release
       id: create_release
