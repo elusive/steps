@@ -93,9 +93,7 @@ func main() {
 		exeErr := l.Execute(i)
 		if exeErr != nil {
 			out("Error during exec of step %d: %v\n", i, exeErr)
-            if l.At(i).Result != steps.Optional {
-                os.Exit(EXECUTION_ERROR)
-            }
+            os.Exit(EXECUTION_ERROR)
 		}
 	}
 

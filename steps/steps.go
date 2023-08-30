@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 	"runtime"
 	"strings"
-	"syscall"
+//	"syscall"
 )
 
 const (
@@ -20,7 +20,7 @@ const (
 	StepDoesNotExist    = "step %d does not exist"
 	ExecuteBatError     = "error %v executing BAT step: %s"
 	ExecuteCmdError     = "error executing CMD step: %s"
-	ExecuteExeError     = "error executing EXE step: %s"
+	ExecuteExeError     = "error executing EXE step: %v"
 	UnsupportedStepType = "unknown or unsupported step type: %s"
 )
 
@@ -121,10 +121,10 @@ func (l *List) Execute(i int) error {
 		fpath, _ := filepath.Abs(step.Text)
 		cmd := exec.Cmd{
 			Path: fpath,
-			SysProcAttr: &syscall.SysProcAttr{
-				CreationFlags:    CREATE_NEW_CONSOLE,
-				NoInheritHandles: true,
-			},
+		//	SysProcAttr: &syscall.SysProcAttr{
+		//		CreationFlags:    CREATE_NEW_CONSOLE,
+	    //			NoInheritHandles: true,
+	    //		},
 		}
 
 		if err := cmd.Run(); err != nil {
@@ -135,7 +135,14 @@ func (l *List) Execute(i int) error {
 	}
 
 	if step.Type == CMD {
-		out, err := exec.Command("cmd", "/C", step.Text).Output()
+        var prefix string = "cmd"
+        var prefix2 string = "/C"
+        if runtime.GOOS == "linux" {
+            prefix = ""
+            prefix2 = ""
+        }
+
+		out, err := exec.Command(prefix, prefix2, step.Text).Output()
 		if err == nil {
 			fmt.Println(string(out))
 			return nil
@@ -151,18 +158,18 @@ func (l *List) Execute(i int) error {
 	if step.Type == EXE {
 		_, exeErr := exec.Command(step.Text).Output()
 		if exeErr != nil {
-			return nil
-		}
+            if step.Result == Required {
+                return fmt.Errorf(ExecuteExeError, exeErr)
+            } else {
+                fmt.Printf(ExecuteExeError+"\n", exeErr)
+                return nil
+            }
+    	}
 
-		if step.Result == Required {
-			return fmt.Errorf(ExecuteExeError, exeErr)
-		} else {
-			fmt.Printf(ExecuteExeError+"\n", exeErr)
-			return nil
-		}
-	}
-
-	return fmt.Errorf(UnsupportedStepType, step.Type)
+        return nil
+    }
+	
+    return fmt.Errorf(UnsupportedStepType, step.Type)
 }
 
 // Load list from *.steps file

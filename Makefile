@@ -9,9 +9,16 @@ test:
 
 build:
 	@GOARCH=amd64 GOOS=windows go build -o ${BINARY_NAME}.exe cmd/steps/main.go
+.PHONY: build
 
-run: build
+build/linux:
+	@GOARCH=amd64 GOOS=linux go build -o ${BINARY_NAME}-linux cmd/steps/main.go
+	@chmod +x ${BINARY_NAME}-linux
+.PHONY: build/linux
+
+run: 
 	@go run ./cmd/steps/main.go
+.PHONY: run
 
 clean: 
 	@go clean

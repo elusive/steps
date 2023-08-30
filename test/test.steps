@@ -1,5 +1,6 @@
-CMD,optional,echo john && dir
-BAT,required,.\\test\\test.bat
+EXE,optional,geany
+CMD,required,echo john
+CMD,required,.\\test\\test.sh
 BAT,required,%ChipsterEngine%/ChipsterSupport/ChipsterServerUtility/Install.bat
 CMD,required,cd ..\..\UniformServer &amp;&amp; UniController.exe start_both
 EXE,optional,.\ChipsterBrowser\Palemoon-Portable.exe

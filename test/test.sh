@@ -2,4 +2,4 @@
 
 
 echo "Please hit enter to continue..."
-PAUSE
+#PAUSE
