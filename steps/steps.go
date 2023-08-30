@@ -114,17 +114,13 @@ func (l *List) Execute(i int) error {
 	step := lst[i]
 
 	if step.Type == BAT {
-		if runtime.GOOS != "windows" {
-			return fmt.Errorf("bat file execution not available on non-windows system")
-		}
+//		if runtime.GOOS != "windows" {
+//			return fmt.Errorf("bat file execution not available on non-windows system")
+//		}
 
 		fpath, _ := filepath.Abs(step.Text)
 		cmd := exec.Cmd{
 			Path: fpath,
-		//	SysProcAttr: &syscall.SysProcAttr{
-		//		CreationFlags:    CREATE_NEW_CONSOLE,
-	    //			NoInheritHandles: true,
-	    //		},
 		}
 
 		if err := cmd.Run(); err != nil {
