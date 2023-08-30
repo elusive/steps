@@ -1,28 +1,33 @@
-# Steps Utility
-Simple CLI designed to ease the execution of a series of cmd line, 
-bat file, scripts, etc. Each step to be completed is sourced from
-a text manifest that serves as a direct guide to the order of 
-execution and the steps to be executed. 
+# Steps
+Windows command runner in a simple CLI designed to ease execution 
+of a series of cmd line commands, bat files, scripts, and executable
+program. Each step to be completed is configured using a text file
+in CSV format where a record represents a single step to be executed.
+
+## Steps
+A step is a comma separated set of values on a single line in the 
+steps file. The steps consist of 3 values:
+> 1. Step Type:  `BAT`, `CMD`, or `EXE` - step type determines how the step Text is handled when the step is run.
+> 2. Step Result: `required`, or `optional` - step result controls whether or not an error during a step will stop the rest of the run.
+> 3. Step Text: `test\\test.bat`, or `echo hello world`, or `notepad.exe`
 
 ## Steps File
 The steps file allows users to easily edit the steps that are being
-executed. Each line in the steps file is a CSV record that specifies
-the strings that describe a step in the series of steps that make up
-a steps program run. 
+executed. Each line in the steps file is a single step and all steps 
+are loaded when the steps file is resolved. The steps file itself 
+can be located in a few places or passed as a parameter to the 
+steps program.
 
 #### Steps File Location
-There are a few possible locations for the steps file and they are 
-tried in order using the following logic:
-> 1. Default Steps File:  the default steps file is 
+The logic used to load the steps file is applied to each possible 
+location in sequence. The order and description of the locations
+is as follows:
+> 1. First there is a default steps file constant value of `.steps` which is expected to be in the same folder as the steps.exe program.
+> 2. Second the environment variable `STEPS_FILENAME` is check for a value which is expected to be relative to the current working directory.
+> 3. Third the user can pass in the relative path and name of the steps file when running the steps.exe program.
+> 4. Finally if a steps file has not been found the steps program will search recursively from the current working directory and find the first file meeting the `*.steps` pattern.
 
-## What is a Step?
-A step is a command line task that must return an integer value that
-indicates it was successful or not.  A non-zero integer result tells
-the steps program that the result was unsuccessful. 
-
-Each step has is one of a supported list of types.
-
-###### Supported Types
+###### Supported Step Types
 
 | Type | Description |
 | --- | --- |
@@ -30,11 +35,28 @@ Each step has is one of a supported list of types.
 | CMD | Windows cmd string |
 | EXE | Executable file |
 
-upcoming types are VBS, JS, PS... as needed
+###### Supported Step Results
+`required` - this value means that if an error occurs in a step, subsequent steps will not be ran.
+`optional` - this value means that the steps will continue to be ran even if this one end in an error.
 
 ## Elevated Execution
-The steps program will run in an elevated process and therefore 
-require a UAC prompt but this single UAC prompt will cover the
-entire manifest of steps.
+The steps program should be run as an administrator in an elevated process so that the run will 
+require a UAC prompt but this single UAC prompt will cover the entire list of steps.
+
+## Some Examples
+You will find some test batch files and command text use in the .\steps\steps_test.go file. And here 
+are some other examples:
+
+###### BAT Step Type:
+BAT,required,.\\test\\test.bat
+BAT,optional,c:\\Temp\\StartSearch.bat
+
+###### CMD Step Type:
+CMD,optional,cd .\\cmd && dir
+CMD,required,clear
+
+###### EXE Step Type: 
+EXE,required,notepad.exe .\\README.md
+EXE,optional,calc.exe
 
 
