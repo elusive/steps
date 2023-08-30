@@ -149,7 +149,7 @@ func TestExecuteCmd(t *testing.T) {
 	if runtime.GOOS == "windows" {
 		commandText = "pwd"
 	} else {
-		commandText = "ls ./"
+		commandText = "ls"
 	}
 	record := []string{string(CMD), string(Required), commandText}
 
