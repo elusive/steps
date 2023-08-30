@@ -215,7 +215,7 @@ func TestExecuteExe(t *testing.T) {
 		err := steps.Execute(i)
 
 		// assert (if on windows, linux does not have notepad)
-		if err != nil && os.GOOS == "windows" {
+		if err != nil && runtime.GOOS == "windows" {
 			t.Fatalf("Error occured during exec of step %d: %v", i, err)
 		}
 	}
