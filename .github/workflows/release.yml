@@ -19,7 +19,7 @@ jobs:
 
     - name: Build
       run: make build |
-          zip steps-win steps.exe
+          zip -r steps-win.zip *.exe
     - name: Create Release
       id: create_release
       uses: softprops/action-gh-release@v1
