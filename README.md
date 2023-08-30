@@ -4,14 +4,16 @@ bat file, scripts, etc. Each step to be completed is sourced from
 a text manifest that serves as a direct guide to the order of 
 execution and the steps to be executed. 
 
-## Steps Manifest 
-The steps manifest file allows users to easily edit what is being
-executed. Each line in the steps manifest file is one of a several
-optional strings that describe a step in the execution.  Each step
-in the manifest can also be configured as required, or optional to
-support either making sure a step is successful before going on to
-the next one, or ignoring the result of a step and continuing to
-the next step regardless of the result.
+## Steps File
+The steps file allows users to easily edit the steps that are being
+executed. Each line in the steps file is a CSV record that specifies
+the strings that describe a step in the series of steps that make up
+a steps program run. 
+
+#### Steps File Location
+There are a few possible locations for the steps file and they are 
+tried in order using the following logic:
+> 1. Default Steps File:  the default steps file is 
 
 ## What is a Step?
 A step is a command line task that must return an integer value that
