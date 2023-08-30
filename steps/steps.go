@@ -132,13 +132,14 @@ func (l *List) Execute(i int) error {
 
 	if step.Type == CMD {
         var prefix string = "cmd"
-        var prefix2 string = "/C"
-        if runtime.GOOS == "linux" {
-            prefix = ""
-            prefix2 = ""
+        var cmds [] string = strings.Split(step.Text, " ")
+        if runtime.GOOS != "linux" {
+            cmds = append([]string{prefix}, cmds...) 
+        } else {
+            prefix = "sh" 
         }
 
-		out, err := exec.Command(prefix, prefix2, step.Text).Output()
+		out, err := exec.Command(prefix, cmds...).Output()
 		if err == nil {
 			fmt.Println(string(out))
 			return nil
