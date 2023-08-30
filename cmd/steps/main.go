@@ -42,19 +42,11 @@ func main() {
 	setCurrentPath()
 
 	/**
-	 *  Initial logic is that if no args are provided
-	 *  then we will load the default filename of steps
-	 *  or the filename found in the environment vars.
-	 *  And we will begin execution of the steps found.
-	 *
-	 *  If the default file does not exist then we can
-	 *  perform a recursive file search for the first
-	 *  file we find that has the "*.steps" extension.
-	 *
-	 *  If a single arg is passed it is treated as the
-	 *  filename (for now) and steps loaded from it. And
-	 *  then we will begin execution of those steps.
-	 */
+     *  Initial logic for steps filename is:
+     *    - default steps file
+     *   - env var STEPS_FILENAME
+     *   - search for *.steps
+     */
 
 	var resolved bool
 
@@ -101,7 +93,9 @@ func main() {
 		exeErr := l.Execute(i)
 		if exeErr != nil {
 			out("Error during exec of step %d: %v\n", i, exeErr)
-			os.Exit(EXECUTION_ERROR)
+            if l.At(i).Result != steps.Optional {
+                os.Exit(EXECUTION_ERROR)
+            }
 		}
 	}
 

@@ -46,7 +46,7 @@ var (
 	StepCount int
 )
 
-type List []step
+type List []*step
 
 // private definition of step type
 type step struct {
@@ -64,6 +64,19 @@ func (s *step) ToString() string {
  * PUBLIC methods for the list
  */
 
+// Return step record at index provided
+func (l *List) At(index int) *step {
+    steps := *l
+    for i, step := range steps {
+        if i == index {
+            return step
+        }
+    } 
+
+    return nil
+}
+
+
 // Add steps from []string
 func (l *List) Add(record []string) error {
 	s := step{}
@@ -80,7 +93,7 @@ func (l *List) Add(record []string) error {
 	}
 
 	s.Text = record[2]
-	*l = append(*l, s)
+	*l = append(*l, &s)
 	return nil
 }
 
