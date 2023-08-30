@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 	"runtime"
 	"strings"
-//	"syscall"
+	"syscall"
 )
 
 const (
@@ -121,7 +121,11 @@ func (l *List) Execute(i int) error {
 		fpath, _ := filepath.Abs(step.Text)
 		cmd := exec.Cmd{
 			Path: fpath,
-		}
+            SysProcAttr: &syscall.SysProcAttr{
+				CreationFlags:    CREATE_NEW_CONSOLE,
+				NoInheritHandles: true,
+			},
+        }
 
 		if err := cmd.Run(); err != nil {
 			return fmt.Errorf(ExecuteBatError, err, step.Text)
