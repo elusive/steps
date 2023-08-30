@@ -20,7 +20,7 @@ jobs:
     - name: Build
       run: make build |
           zip --junk-paths steps.exe README.md
-    - name: Release
+    - name: Create Release
       uses: softprops/action-gh-release@v1
       env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
