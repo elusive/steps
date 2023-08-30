@@ -93,6 +93,7 @@ func TestGetStepFile(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating temp file: %s", err)
 	}
+    defer tf.Close()
 
 	// act
 	l1.Load(tf.Name())
@@ -116,6 +117,7 @@ func TestLoad(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating temp file: %s", err)
 	}
+    defer tf.Close()
 
 	// act
 	w := bufio.NewWriter(tf)
@@ -145,7 +147,7 @@ func TestExecuteCmd(t *testing.T) {
 	steps := List{}
 	var commandText string
 	if runtime.GOOS == "windows" {
-		commandText = "dir"
+		commandText = "pwd"
 	} else {
 		commandText = "ls ./"
 	}
@@ -212,8 +214,8 @@ func TestExecuteExe(t *testing.T) {
 		util.KillProcessAsync(processName)
 		err := steps.Execute(i)
 
-		// assert
-		if err != nil {
+		// assert (if on windows, linux does not have notepad)
+		if err != nil && os.GOOS == "windows" {
 			t.Fatalf("Error occured during exec of step %d: %v", i, err)
 		}
 	}

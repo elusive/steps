@@ -1,5 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/sh
 
-
-echo "Please hit enter to continue..."
+echo "Hello from bash script file."
 #PAUSE
