@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"os"
 	"runtime"
+    "strings"
 	"testing"
 
 	"github.com/elusive/steps/util"
@@ -17,6 +18,7 @@ var testStepRecords []string = []string{
 	"\"BAT\",\"required\",\"test.bat\"",
 	"\"CMD\",\"optional\",\"cd ../ && echo pwd\"",
 	"\"EXE\",\"required\",\"notepad.exe\"",
+    "\"xEXE\",\"required\",\"notepad.exe\"",
 }
 
 func TestAdd(t *testing.T) {
@@ -41,6 +43,20 @@ func TestAdd(t *testing.T) {
 	if lst[0].Text != cmdText {
 		t.Fatalf("Added step type expected %v got %v", cmdText, lst[0].Text)
 	}
+}
+
+func TestAddInvalidRecord(t *testing.T) {
+    lst := List{}
+    stepValues := strings.Split(testStepRecords[3], ",")
+    err := lst.Add(stepValues)
+
+    if err != nil {
+        t.Fatalf("error adding invalid: %v", err)
+    }
+
+    if len(lst) > 0 {
+        t.Fatal("invalid record added")
+    }
 }
 
 func TestCount(t *testing.T) {

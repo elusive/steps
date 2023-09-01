@@ -55,8 +55,6 @@ func main() {
 	resolved = (absErr == nil) && util.FileExists(stepsFileName)
 	if resolved {
 		out("Resolved steps filename: %s", stepsFileName)
-	} else {
-		out("Default and/or Env Var steps file not resolved.")
 	}
 
 	if resolved {
@@ -85,17 +83,17 @@ func main() {
 		out("Found steps file loaded")
 	}
 
-	// output some feedback (TODO:  remove or update this)
-	out("%d steps loaded from .steps file: %s\n", l.Count(), stepsFileName)
-
-	// execute steps
+    // execute steps
 	for i := 0; i < l.Count(); i++ {
         out("Executing Step %d: %v", i, l.At(i).ToString())
 		exeErr := l.Execute(i)
+         out("Executing STEP %d", i)
 		if exeErr != nil {
 			out("Error during exec of step %d: %v\n", i, exeErr)
             os.Exit(EXECUTION_ERROR)
 		}
+
+         out("Completed STEP %d", i)
 	}
 
 	out("...Exiting Steps Utility")

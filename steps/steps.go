@@ -6,7 +6,6 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"runtime"
 	"strings"
 	"syscall"
 )
@@ -83,7 +82,9 @@ func (l *List) Add(record []string) error {
 	if t, ok := ParseStepType(record[0]); ok {
 		s.Type = t
 	} else {
-		return fmt.Errorf("invalid value for StepType %s", record[0])
+		// just skip adding this record if invalid type
+        return nil
+        //return fmt.Errorf("invalid value for StepType %s", record[0])
 	}
 
 	if r, ok := ParseStepResult(record[1]); ok {
@@ -113,6 +114,8 @@ func (l *List) Execute(i int) error {
 
 	step := lst[i]
 
+   
+
 	if step.Type == BAT {
 //		if runtime.GOOS != "windows" {
 //			return fmt.Errorf("bat file execution not available on non-windows system")
@@ -120,11 +123,12 @@ func (l *List) Execute(i int) error {
 
 		fpath, _ := filepath.Abs(step.Text)
 		cmd := exec.Cmd{
-			Path: fpath,
+			Path: os.ExpandEnv(fpath),
             SysProcAttr: &syscall.SysProcAttr{
 				CreationFlags:    CREATE_NEW_CONSOLE,
 				NoInheritHandles: true,
 			},
+            Env: os.Environ(),
         }
 
 		if err := cmd.Run(); err != nil {
@@ -136,14 +140,12 @@ func (l *List) Execute(i int) error {
 
 	if step.Type == CMD {
         var prefix string = "cmd"
-        var cmds [] string = strings.Split(step.Text, " ")
-        if runtime.GOOS != "linux" {
-            cmds = append([]string{prefix}, cmds...) 
-        } else {
-            prefix = "sh" 
-        }
-
-		out, err := exec.Command(prefix, cmds...).Output()
+        var expandedText = os.ExpandEnv(step.Text)
+        var cmds [] string = strings.Split(expandedText, " ")
+        cmds = append([]string{"/k"}, cmds...)
+        cmd := exec.Command(prefix, cmds...)
+        cmd.Env = os.Environ()
+        out, err := cmd.Output()
 		if err == nil {
 			fmt.Println(string(out))
 			return nil
@@ -157,7 +159,14 @@ func (l *List) Execute(i int) error {
 	}
 
 	if step.Type == EXE {
-		_, exeErr := exec.Command(step.Text).Output()
+	    cmd := exec.Command(step.Text)	
+        if step.Result == Optional {
+            // async
+            err := cmd.Start()
+            return err
+        }
+        
+        _, exeErr := cmd.Output()
 		if exeErr != nil {
             if step.Result == Required {
                 return fmt.Errorf(ExecuteExeError, exeErr)
@@ -169,7 +178,7 @@ func (l *List) Execute(i int) error {
 
         return nil
     }
-	
+    
     return fmt.Errorf(UnsupportedStepType, step.Type)
 }
 
