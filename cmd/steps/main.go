@@ -10,6 +10,12 @@ import (
 	"github.com/elusive/steps/util"
 )
 
+// variables to hold automated version and build 
+var (
+    Version string
+    Build string
+)
+
 const (
 	stepsFileEnvVarName string = "STEPS_FILENAME"
 
@@ -35,7 +41,7 @@ func main() {
 	flag.BoolVar(&verbose, "verbose", false, "Verbose output for debugging.")
 	flag.Parse()
 
-	out("Starting Steps Utility...")
+	out("Steps %s, %s", Version, Build)
 
 	setEnvStepsFileIfFound()
 	setStepsFileFromArgsIfFound()
