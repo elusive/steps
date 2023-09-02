@@ -131,6 +131,12 @@ func (l *List) Execute(i int) error {
             Env: os.Environ(),
         }
 
+        // call async??
+        if step.Result == Optional {
+            err := cmd.Start()
+            return err
+        }
+
 		if err := cmd.Run(); err != nil {
 			return fmt.Errorf(ExecuteBatError, err, step.Text)
 		}
@@ -145,8 +151,15 @@ func (l *List) Execute(i int) error {
         cmds = append([]string{"/k"}, cmds...)
         cmd := exec.Command(prefix, cmds...)
         cmd.Env = os.Environ()
+
+        // call async??
+        if step.Result == Optional {
+            err := cmd.Start()
+            return err
+        } 
+          
         out, err := cmd.Output()
-		if err == nil {
+        if err == nil {
 			fmt.Println(string(out))
 			return nil
 		}
@@ -160,8 +173,9 @@ func (l *List) Execute(i int) error {
 
 	if step.Type == EXE {
 	    cmd := exec.Command(step.Text)	
+
+        // call async??
         if step.Result == Optional {
-            // async
             err := cmd.Start()
             return err
         }
