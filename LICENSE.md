@@ -88,4 +88,38 @@ Creative Commons is not a party to its public licenses. Notwithstanding, Creativ
 
 Creative Commons may be contacted at [creativecommons.org](https://creativecommons.org/).
 
-Additional languages available: العربية, čeština, Dansk, Deutsch, Ελληνικά, Español, euskara, suomeksi, français, Frysk, hrvatski, Bahasa Indonesia, italiano, 日本語, 한국어, Lietuvių, latviski, te reo Māori, Nederlands, norsk, polski, português, română, русский, Slovenščina, svenska, Türkçe, українська, 中文, 華語. Please read the FAQ for more information about official translations.
+<p><a id="languages"></a>Additional languages available:
+
+<a href="https://creativecommons.org/licenses/by/4.0/legalcode.ar">العربية</a>,
+<a href="https://creativecommons.org/licenses/by/4.0/legalcode.cs">čeština</a>,
+<a href="https://creativecommons.org/licenses/by/4.0/legalcode.da">Dansk</a>,
+<a href="https://creativecommons.org/licenses/by/4.0/legalcode.de">Deutsch</a>,
+<a href="https://creativecommons.org/licenses/by/4.0/legalcode.el">Ελληνικά</a>,
+<a href="https://creativecommons.org/licenses/by/4.0/legalcode.es">Español</a>,
+<a href="https://creativecommons.org/licenses/by/4.0/legalcode.eu">euskara</a>,
+<a href="https://creativecommons.org/licenses/by/4.0/legalcode.fi">suomeksi</a>,
+<a href="https://creativecommons.org/licenses/by/4.0/legalcode.fr">français</a>,
+<a href="https://creativecommons.org/licenses/by/4.0/legalcode.fy">Frysk</a>,
+<a href="https://creativecommons.org/licenses/by/4.0/legalcode.hr">hrvatski</a>,
+<a href="https://creativecommons.org/licenses/by/4.0/legalcode.id">Bahasa Indonesia</a>,
+<a href="https://creativecommons.org/licenses/by/4.0/legalcode.it">italiano</a>,
+<a href="https://creativecommons.org/licenses/by/4.0/legalcode.ja">日本語</a>,
+<a href="https://creativecommons.org/licenses/by/4.0/legalcode.ko">한국어</a>,
+<a href="https://creativecommons.org/licenses/by/4.0/legalcode.lt">Lietuvių</a>,
+<a href="https://creativecommons.org/licenses/by/4.0/legalcode.lv">latviski</a>,
+<a href="https://creativecommons.org/licenses/by/4.0/legalcode.mi">te reo Māori</a>,
+<a href="https://creativecommons.org/licenses/by/4.0/legalcode.nl">Nederlands</a>,
+<a href="https://creativecommons.org/licenses/by/4.0/legalcode.no">norsk</a>,
+<a href="https://creativecommons.org/licenses/by/4.0/legalcode.pl">polski</a>,
+<a href="https://creativecommons.org/licenses/by/4.0/legalcode.pt">português</a>,
+<a href="https://creativecommons.org/licenses/by/4.0/legalcode.ro">română</a>,
+<a href="https://creativecommons.org/licenses/by/4.0/legalcode.ru">русский</a>,
+<a href="https://creativecommons.org/licenses/by/4.0/legalcode.sl">Slovenščina</a>,
+<a href="https://creativecommons.org/licenses/by/4.0/legalcode.sv">svenska</a>,
+<a href="https://creativecommons.org/licenses/by/4.0/legalcode.tr">Türkçe</a>,
+<a href="https://creativecommons.org/licenses/by/4.0/legalcode.uk">українська</a>,
+<a href="https://creativecommons.org/licenses/by/4.0/legalcode.zh-Hans">中文</a>,
+<a href="https://creativecommons.org/licenses/by/4.0/legalcode.zh-Hant">華語</a>.
+
+Please read the <a href="https://creativecommons.org/faq/#officialtranslations">FAQ</a> for more information about official translations. </p>
+
