@@ -124,17 +124,18 @@ func (l *List) Execute(i int) error {
 		fpath, _ := filepath.Abs(step.Text)
 		cmd := exec.Cmd{
 			Path: os.ExpandEnv(fpath),
-            SysProcAttr: &syscall.SysProcAttr{
-				CreationFlags:    CREATE_NEW_CONSOLE,
-				NoInheritHandles: true,
-			},
             Env: os.Environ(),
         }
-
+        
         // call async??
         if step.Result == Optional {
             err := cmd.Start()
             return err
+        } else {
+            cmd.SysProcAttr = &syscall.SysProcAttr{
+				CreationFlags:    CREATE_NEW_CONSOLE,
+				NoInheritHandles: true,
+			}
         }
 
 		if err := cmd.Run(); err != nil {
@@ -195,6 +196,7 @@ func (l *List) Execute(i int) error {
     
     return fmt.Errorf(UnsupportedStepType, step.Type)
 }
+
 
 // Load list from *.steps file
 func (l *List) Load(filename string) error {
