@@ -28,9 +28,10 @@ const (
 
 // filename used if none specified
 var (
-	currentPath   string = ""
+	currentPath string   = ""
 	stepsFileName string = ".steps"
-	verbose              = false
+	verbose bool         = false
+    elevated bool        = false
 )
 
 func main() {
@@ -39,7 +40,14 @@ func main() {
 	l := &steps.List{}
 
 	flag.BoolVar(&verbose, "verbose", false, "Verbose output for debugging.")
+    flag.BoolVar(&elevated, "elevated", false, "Run steps as elevated user.")
 	flag.Parse()
+
+    if elevated { 
+        if !util.CheckIsElevated() {
+            util.RunAsElevated()
+        }
+    }   
 
 	out("Steps %s, %s", Version, Build)
 
