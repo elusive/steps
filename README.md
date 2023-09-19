@@ -49,9 +49,12 @@ is as follows:
 `required` - this value means that if an error occurs in a step, subsequent steps will not be ran.
 `optional` - this value means that the steps will continue to be ran even if this one end in an error.
 
-### Elevated Execution
 
-The steps program should be run as an administrator in an elevated process so that the run will require a UAC prompt but this single UAC prompt will cover the entire list of steps.
+## Elevated Execution
+
+The steps program should be run as an administrator in an elevated process so that the run will 
+require a UAC prompt but this single UAC prompt will cover the entire list of steps. Elevated execution
+can be achieved using the `-elevated` switch.
 
 ### Some Examples
 
@@ -78,6 +81,16 @@ EXE,required,notepad.exe .\\README.md
 EXE,optional,calc.exe
 ```
 
+### Switches
+The following switches maybe be passed to the steps.exe in order to alter or enhance its execution behavior.
+
+| Switch | Effect |
+| ------ | ------ |
+| -verbose | Turn on verbose logging |
+| -elevated | Executes all steps as elevated user. |
+
+Note: using the `-elevated` switch will result in a single UAC prompt at the beginning of the execution.
+
 ## Some Important TIPS
 
 > - The paths used in each Step Text value are resolved using the current working directory of the Steps executable and should therefore be relative to the folder where `steps.exe` is run.
@@ -86,3 +99,5 @@ EXE,optional,calc.exe
 > - If a Step is configured as `optional` then it will be exeucted as **non-blocker** and the next step will start w/o it having exited.
 
 Many combinations of Steps can be run together as a large contigous task but using the utility to test each step at a time is the best path forward.
+
+
