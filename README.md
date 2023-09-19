@@ -41,7 +41,8 @@ is as follows:
 
 ## Elevated Execution
 The steps program should be run as an administrator in an elevated process so that the run will 
-require a UAC prompt but this single UAC prompt will cover the entire list of steps.
+require a UAC prompt but this single UAC prompt will cover the entire list of steps. Elevated execution
+can be achieved using the `-elevated` switch.
 
 ## Some Examples
 You will find some test batch files and command text use in the .\steps\steps_test.go file. And here 
@@ -59,4 +60,12 @@ CMD,required,clear
 EXE,required,notepad.exe .\\README.md
 EXE,optional,calc.exe
 
+### Switches
+The following switches maybe be passed to the steps.exe in order to alter or enhance its execution behavior.
 
+| Switch | Effect |
+| ------ | ------ |
+| -verbose | Turn on verbose logging |
+| -elevated | Executes all steps as elevated user. |
+
+Note: using the `-elevated` switch will result in a single UAC prompt at the beginning of the execution.
